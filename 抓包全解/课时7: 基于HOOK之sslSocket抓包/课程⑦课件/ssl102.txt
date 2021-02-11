@@ -1,0 +1,18 @@
+
+android hooking watch class   javax.net.ssl.SSLSocketFactory
+android hooking watch class   javax.net.ssl.SSLSocketFactory$1
+android hooking watch class   javax.net.ssl.TrustManager
+android hooking watch class   javax.net.ssl.TrustManagerFactory
+android hooking watch class   javax.net.ssl.TrustManagerFactory$1
+android hooking watch class   javax.net.ssl.TrustManagerFactorySpi
+android hooking watch class   javax.net.ssl.X509ExtendedKeyManager
+android hooking watch class   javax.net.ssl.X509ExtendedTrustManager
+android hooking watch class   javax.net.ssl.X509KeyManager
+android hooking watch class   javax.net.ssl.X509TrustManager
+android hooking watch class   org.apache.http.conn.ssl.AbstractVerifier
+android hooking watch class   org.apache.http.conn.ssl.AllowAllHostnameVerifier
+android hooking watch class   org.apache.http.conn.ssl.AndroidDistinguishedNameParser
+android hooking watch class   org.apache.http.conn.ssl.BrowserCompatHostnameVerifier
+android hooking watch class   org.apache.http.conn.ssl.SSLSocketFactory
+android hooking watch class   org.apache.http.conn.ssl.StrictHostnameVerifier
+android hooking watch class   org.apache.http.conn.ssl.X509HostnameVerifier
