@@ -42,3 +42,87 @@ CMN             R0, #0x1000
 BXLS            LR
 ```
 
+- 其他问题就是java层和jni层都会调用那个api，所以打印堆栈可能有重复，解决的方式就是通过比对调用栈的第一层函数，是谁，如果是libopenjdk开头，说明是java层的，则不打印就完事了，放下exp
+```
+function printNativeStack(context,name)
+{
+    //Debug
+    var array=Thread.backtrace(context,Backtracer.ACCURATE).map(DebugSymbol.fromAddress).join("\n");
+    var first=DebugSymbol.fromAddress(array[0]);
+
+    if(first.indexOf("libopenjdk.so!NET_Send")<0)
+    {
+        var trace=Thread.backtrace(context,Backtracer.ACCURATE).map(DebugSymbol.fromAddress).join("\n");
+
+        LogPrint("-------------start:"+name+"-----------------");
+  
+        LogPrint(trace);
+        
+        LogPrint("-------------end:"+name+"------------------");
+    }
+    
+}
+function LogPrint(log) {
+    var theDate = new Date();
+    var hour = theDate.getHours();
+    var minute = theDate.getMinutes();
+    var second = theDate.getSeconds();
+    var mSecond = theDate.getMilliseconds();
+
+    hour < 10 ? hour = "0" + hour : hour;
+    minute < 10 ? minute = "0" + minute : minute;
+    second < 10 ? second = "0" + second : second;
+    mSecond < 10 ? mSecond = "00" + mSecond : mSecond < 100 ? mSecond = "0" + mSecond : mSecond;
+    var time = hour + ":" + minute + ":" + second + ":" + mSecond;
+    var threadid = Process.getCurrentThreadId();
+    console.log("[" + time + "]" + "->threadid:" + threadid + "--" + log);
+}
+function hooklibc()
+{
+    var libcmodule=Process.getModuleByName("libc.so");
+    var recvfrom_addr=libcmodule.getExportByName("recvfrom");
+    var sendto_addr=libcmodule.getExportByName("sendto")
+    //ssize_t recvfrom(int fd, void *buf, size_t n, int flags, struct sockaddr *addr, socklen_t *addr_len)
+    Interceptor.attach(recvfrom_addr,{
+        onEnter:function(args)
+        {
+            this.args0=args[0];
+            this.args1=args[1];
+            this.args2=args[2];
+         LogPrint('go int libc.so->recvform');       
+        },onLeave:function(retval)
+        {
+            var size=retval.toInt32();
+            console.log("libc.so->recvfrom:"+hexdump(this.arg1,{
+                length:size
+            }));
+            LogPrint('leave libc.so->recvform');
+        }
+    })
+    Interceptor.attach(recvfrom_addr,{
+        onEnter:function(args)
+        {
+            this.args0=args[0];
+            this.args1=args[1];
+            this.args2=args[2];
+         LogPrint('go int libc.so->sendto');       
+        },onLeave:function(retval)
+        {
+            var size=ptr(this.args2).toInt32();
+            if(size>0)
+            {
+                console.log("libc.so->sendto:"+hexdump(this.arg1,{
+                    length:size
+                }));
+            }
+            
+            LogPrint('leave libc.so->recvform');
+        }
+    })
+}
+function main()
+{
+
+}
+setImmediate(main);
+```
